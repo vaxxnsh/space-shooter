@@ -5,6 +5,8 @@ import { GameObjects, Scenes } from "phaser";
 import * as CONFIG from "@/lib/game-config"
 import { tree } from "next/dist/build/templates/app-page";
 import { WeaponComponent } from "@/weapons/weapon-component";
+import { HealthComponent } from "@/health/health-component";
+import { ColliderComponent } from "@/collider/collider-component";
 
 export class Player extends GameObjects.Container {
     #shipSprite;
@@ -13,6 +15,8 @@ export class Player extends GameObjects.Container {
     #keyInputComponent;
     #horizontalMovementComponent;
     #weaponComponent;
+    #healthComponent;
+    #colliderComponent;
 
     constructor(scene : GameScene) {
         super(scene, scene.scale.width / 2, scene.scale.height - 32, []);
@@ -50,9 +54,52 @@ export class Player extends GameObjects.Container {
                 flipY : false
             }
         );
+        this.#healthComponent = new HealthComponent(CONFIG.PLAYER_HEALTH);
+        this.#colliderComponent = new ColliderComponent(this.#healthComponent);
     }
 
+    get colliderComponent() {
+        return this.#colliderComponent;
+    }
+
+    get healthComponent() {
+        return this.#healthComponent;
+    }
+
+    get weaponComponent() {
+        return this.#weaponComponent;
+    }
+
+    get weaponGameObjectGroup() {
+        return this.#weaponComponent.bulletGroup;
+    }
+
+    #hide() {
+        this.setActive(false);
+        this.setVisible(false);
+        this.#shipEngineSprite.setVisible(false);
+        this.#shipEngineThrusterSprite.setVisible(false);
+        this.#keyInputComponent.lockInput = true;
+    }
+
+
     update(ts: number, dt: number): void {
+        if (!this.active) {
+            return;
+        }
+
+        if (this.#healthComponent.isDead) {
+            this.#hide();
+            this.setVisible(true);
+            this.#shipSprite.play({
+                key : 'explosion',
+            });
+            return;
+        }
+        this.#shipSprite.setFrame((CONFIG.PLAYER_HEALTH - this.#healthComponent.Life).toString(10));
+
+
+
         this.#keyInputComponent.update()
         this.#horizontalMovementComponent.update()
         this.#weaponComponent.update(dt)

@@ -74,7 +74,7 @@ export class WeaponComponent {
 
   worldStep(delta : number) {
     this.#bulletGroup.getChildren().forEach((bullet) => {
-       const b = bullet as Phaser.Physics.Arcade.Image;
+       const b = bullet as Physics.Arcade.Sprite;
         if(!b.active) {
             return;
         }
@@ -85,5 +85,9 @@ export class WeaponComponent {
             b.disableBody(true, true);
         }
     })
+  }
+
+  destroyBullet(bullet : Physics.Arcade.Sprite) {
+    bullet.setState(0);
   }
 }
