@@ -77,6 +77,13 @@ export class FighterEnemy extends GameObjects.Container {
     get weaponComponent() {
         return this.#weaponComponent;
     }
+
+    reset() {
+        this.setActive(true);
+        this.setVisible(true);
+        this.#healthComponent.reset()
+        this.#verticalMovementComponent.reset();
+    }
     
 
     update(ts: number, dt: number): void {

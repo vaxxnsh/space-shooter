@@ -33,4 +33,9 @@ export class HorizontalMovementComponent {
             body.setAngularAcceleration(0);
         }
     }
+
+    reset() {
+        (this.#gameObject.body!).velocity.y = 0;
+        (this.#gameObject.body as Phaser.Physics.Arcade.Body).setAngularAcceleration(0);
+    }
 }

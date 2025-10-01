@@ -60,8 +60,25 @@ export class ScoutEnemy extends GameObjects.Container {
     get healthComponent() {
         return this.#healthComponent;
     }
+
+    reset() {
+        this.setActive(true);
+        this.setVisible(true);
+        this.#healthComponent.reset()
+        this.#verticalMovementComponent.reset();
+        this.#horizontalMovementComponent.reset();
+    }
     
     update(ts: number, dt: number): void {
+        if (!this.active) {
+            return;
+        }
+
+        if (this.#healthComponent.isDead) {
+        this.setActive(false);
+        this.setVisible(false);
+        }
+
         this.#inputComponent.update()
         this.#horizontalMovementComponent.update();
         this.#verticalMovementComponent.update();
