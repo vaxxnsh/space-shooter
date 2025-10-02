@@ -8,15 +8,16 @@ import { BotFighterInputComponent } from "@/inputs/bot-fighter-input-component";
 import { WeaponComponent } from "@/weapons/weapon-component";
 import { HealthComponent } from "@/health/health-component";
 import { ColliderComponent } from "@/collider/collider-component";
+import { InputComponent } from "@/inputs/input-component";
 
 export class FighterEnemy extends GameObjects.Container {
     #shipSprite;
     #shipEngineSprite;
-    #inputComponent;
-    #verticalMovementComponent;
-    #weaponComponent;
-    #healthComponent;
-    #colliderComponent;
+    #inputComponent : BotFighterInputComponent | undefined;
+    #verticalMovementComponent : VerticalMovementComponent | undefined;
+    #weaponComponent : WeaponComponent | undefined;
+    #healthComponent : HealthComponent | undefined;
+    #colliderComponent : ColliderComponent | undefined;
      
     constructor(scene : GameScene,x : number,y : number) {
         super(scene, x, y, []);
@@ -32,7 +33,30 @@ export class FighterEnemy extends GameObjects.Container {
         this.#shipEngineSprite.play('fighter_engine');
         this.add([this.#shipEngineSprite, this.#shipSprite]);
 
-        this.#inputComponent = new BotFighterInputComponent()
+        this.scene.events.on(Scenes.Events.UPDATE,this.update,this)
+        this.once(GameObjects.Events.DESTROY, () => {
+            this.scene.events.off(Scenes.Events.UPDATE,this.update,this)
+        },this)
+    }
+
+    get colliderComponent() {
+        return this.#colliderComponent;
+    }
+
+    get weaponGameObjectGroup() {
+        return this.#weaponComponent!.bulletGroup;
+    }
+
+
+    get healthComponent() {
+        return this.#healthComponent;
+    }
+    get weaponComponent() {
+        return this.#weaponComponent;
+    }
+
+    init() {
+         this.#inputComponent = new BotFighterInputComponent()
 
         this.#verticalMovementComponent = new VerticalMovementComponent(
             this,
@@ -55,34 +79,13 @@ export class FighterEnemy extends GameObjects.Container {
 
         this.#healthComponent = new HealthComponent(CONFIG.ENEMY_SCOUT_HEALTH);
         this.#colliderComponent = new ColliderComponent(this.#healthComponent);
-
-        this.scene.events.on(Scenes.Events.UPDATE,this.update,this)
-        this.once(GameObjects.Events.DESTROY, () => {
-            this.scene.events.off(Scenes.Events.UPDATE,this.update,this)
-        },this)
-    }
-
-    get colliderComponent() {
-        return this.#colliderComponent;
-    }
-
-    get weaponGameObjectGroup() {
-        return this.#weaponComponent.bulletGroup;
-    }
-
-
-    get healthComponent() {
-        return this.#healthComponent;
-    }
-    get weaponComponent() {
-        return this.#weaponComponent;
     }
 
     reset() {
         this.setActive(true);
         this.setVisible(true);
-        this.#healthComponent.reset()
-        this.#verticalMovementComponent.reset();
+        this.#healthComponent!.reset()
+        this.#verticalMovementComponent!.reset();
     }
     
 
@@ -91,13 +94,13 @@ export class FighterEnemy extends GameObjects.Container {
             return;
         }
 
-        if (this.#healthComponent.isDead) {
+        if (this.#healthComponent!.isDead) {
             this.setActive(false);
             this.setVisible(false);
         }
 
-        this.#inputComponent.update()
-        this.#verticalMovementComponent.update();
-        this.#weaponComponent.update(dt);
+        this.#inputComponent!.update()
+        this.#verticalMovementComponent!.update();
+        this.#weaponComponent!.update(dt);
     }
 }

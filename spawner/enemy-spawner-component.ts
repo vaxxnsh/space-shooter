@@ -26,6 +26,9 @@ export class EnemySpawnerComponent {
         name: `${this.constructor.name}-${Math.RND.uuid()}`,
         classType: enemyClass,
         runChildUpdate: true,
+        createCallback : (enemy) => {
+          enemy.disableInteractive()
+        }
     })
 
     this.#spawnInterval = spawnConfig.interval;

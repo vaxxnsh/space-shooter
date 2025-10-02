@@ -10,11 +10,11 @@ import { HealthComponent } from "@/health/health-component";
 export class ScoutEnemy extends GameObjects.Container {
     #shipSprite;
     #shipEngineSprite;
-    #inputComponent;
-    #verticalMovementComponent;
-    #horizontalMovementComponent;
-    #healthComponent;
-    #colliderComponent;
+    #inputComponent : BotScoutInputComponent | undefined;
+    #verticalMovementComponent : VerticalMovementComponent | undefined ;
+    #horizontalMovementComponent : HorizontalMovementComponent | undefined;
+    #healthComponent : HealthComponent | undefined;
+    #colliderComponent : ColliderComponent | undefined;
      
     constructor(scene : GameScene,x : number,y : number) {
         super(scene, x, y, []);
@@ -29,22 +29,6 @@ export class ScoutEnemy extends GameObjects.Container {
         this.#shipEngineSprite = scene.add.sprite(0, 0, 'scout_engine').setFlipY(true);
         this.#shipEngineSprite.play('scout_engine');
         this.add([this.#shipEngineSprite, this.#shipSprite]);
-
-        this.#inputComponent = new BotScoutInputComponent(this)
-        this.#verticalMovementComponent = new VerticalMovementComponent(
-            this,
-            this.#inputComponent,
-            CONFIG.ENEMY_SCOUT_MOVEMENT_VERTICAL_VELOCITY
-        );
-
-        this.#horizontalMovementComponent = new HorizontalMovementComponent(this,
-            this.#inputComponent,
-            CONFIG.ENEMY_SCOUT_MOVEMENT_HORIZONTAL_VELOCITY
-        )
-
-        this.#healthComponent = new HealthComponent(CONFIG.ENEMY_SCOUT_HEALTH);
-        this.#colliderComponent = new ColliderComponent(this.#healthComponent);
-
 
         this.scene.events.on(Scenes.Events.UPDATE,this.update,this)
         this.once(GameObjects.Events.DESTROY, () => {
@@ -61,12 +45,29 @@ export class ScoutEnemy extends GameObjects.Container {
         return this.#healthComponent;
     }
 
+    init() {
+        this.#inputComponent = new BotScoutInputComponent(this)
+        this.#verticalMovementComponent = new VerticalMovementComponent(
+            this,
+            this.#inputComponent,
+            CONFIG.ENEMY_SCOUT_MOVEMENT_VERTICAL_VELOCITY
+        );
+
+        this.#horizontalMovementComponent = new HorizontalMovementComponent(this,
+            this.#inputComponent,
+            CONFIG.ENEMY_SCOUT_MOVEMENT_HORIZONTAL_VELOCITY
+        )
+
+        this.#healthComponent = new HealthComponent(CONFIG.ENEMY_SCOUT_HEALTH);
+        this.#colliderComponent = new ColliderComponent(this.#healthComponent);
+    }
+
     reset() {
         this.setActive(true);
         this.setVisible(true);
-        this.#healthComponent.reset()
-        this.#verticalMovementComponent.reset();
-        this.#horizontalMovementComponent.reset();
+        this.#healthComponent!.reset()
+        this.#verticalMovementComponent!.reset();
+        this.#horizontalMovementComponent!.reset();
     }
     
     update(ts: number, dt: number): void {
@@ -74,13 +75,13 @@ export class ScoutEnemy extends GameObjects.Container {
             return;
         }
 
-        if (this.#healthComponent.isDead) {
+        if (this.#healthComponent!.isDead) {
         this.setActive(false);
         this.setVisible(false);
         }
 
-        this.#inputComponent.update()
-        this.#horizontalMovementComponent.update();
-        this.#verticalMovementComponent.update();
+        this.#inputComponent!.update()
+        this.#horizontalMovementComponent!.update();
+        this.#verticalMovementComponent!.update();
     }
 }
