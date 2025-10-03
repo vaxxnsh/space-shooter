@@ -6,8 +6,11 @@ import { Player } from "@/objects/player";
 import { EnemySpawnerComponent } from "@/spawner/enemy-spawner-component";
 import { Physics, Scene, Types} from "phaser";
 import * as CONFIG from "@/lib/game-config"
+import { EventBusComponent } from "@/events/event-bus-component";
 
 export default class GameScene extends Scene {
+
+ 
   constructor() {
     super("GameScene");
   }
@@ -18,6 +21,7 @@ export default class GameScene extends Scene {
 
   create() {
     const player = new Player(this);
+    const eventBus = new EventBusComponent();
     // const scouts = new ScoutEnemy(this, this.scale.width/2,20);
     // const fighter = new FighterEnemy(this,this.scale.width/2,20);
 
@@ -25,12 +29,12 @@ export default class GameScene extends Scene {
       interval : CONFIG.ENEMY_SCOUT_GROUP_SPAWN_INTERVAL,
       spawnAt : CONFIG.ENEMY_SCOUT_GROUP_SPAWN_START,
       disableSpawning : false,
-    })
+    },eventBus)
     const fighterSpawner = new EnemySpawnerComponent(this,FighterEnemy,{
       interval : CONFIG.ENEMY_FIGHTER_GROUP_SPAWN_INTERVAL,
       spawnAt : CONFIG.ENEMY_FIGHTER_GROUP_SPAWN_START,
       disableSpawning : false,
-    })
+    },eventBus)
 
     // this.physics.add.overlap(player,fighter,(playerObj, enemyObj) => {
     //   const pl = playerObj as Player

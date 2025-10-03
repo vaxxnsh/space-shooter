@@ -3,7 +3,6 @@ import { HorizontalMovementComponent } from "@/movement/horizontal-movement-comp
 import GameScene from "@/scenes/game";
 import { GameObjects, Scenes } from "phaser";
 import * as CONFIG from "@/lib/game-config"
-import { tree } from "next/dist/build/templates/app-page";
 import { WeaponComponent } from "@/weapons/weapon-component";
 import { HealthComponent } from "@/health/health-component";
 import { ColliderComponent } from "@/collider/collider-component";

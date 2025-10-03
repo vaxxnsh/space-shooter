@@ -9,6 +9,7 @@ import { WeaponComponent } from "@/weapons/weapon-component";
 import { HealthComponent } from "@/health/health-component";
 import { ColliderComponent } from "@/collider/collider-component";
 import { InputComponent } from "@/inputs/input-component";
+import { CUSTOM_EVENTS, EventBusComponent } from "@/events/event-bus-component";
 
 export class FighterEnemy extends GameObjects.Container {
     #shipSprite;
@@ -18,9 +19,11 @@ export class FighterEnemy extends GameObjects.Container {
     #weaponComponent : WeaponComponent | undefined;
     #healthComponent : HealthComponent | undefined;
     #colliderComponent : ColliderComponent | undefined;
-     
+    #eventBusComponent : EventBusComponent | undefined;
+    #isInitialized : boolean = false;
+
     constructor(scene : GameScene,x : number,y : number) {
-        super(scene, x, y, []);
+        super(scene, x, y, []); 
 
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
@@ -55,30 +58,30 @@ export class FighterEnemy extends GameObjects.Container {
         return this.#weaponComponent;
     }
 
-    init() {
-         this.#inputComponent = new BotFighterInputComponent()
-
+    init(eventBusComponent : EventBusComponent) {
+        this.#eventBusComponent = eventBusComponent;
+        this.#inputComponent = new BotFighterInputComponent();
         this.#verticalMovementComponent = new VerticalMovementComponent(
-            this,
-            this.#inputComponent,
-            CONFIG.ENEMY_FIGHTER_MOVEMENT_VERTICAL_VELOCITY
+        this,
+        this.#inputComponent,
+        CONFIG.ENEMY_FIGHTER_MOVEMENT_VERTICAL_VELOCITY
         );
-
         this.#weaponComponent = new WeaponComponent(
-            this,
-            this.#inputComponent,
-            {
-                speed: CONFIG.ENEMY_FIGHTER_BULLET_SPEED,
-                interval: CONFIG.ENEMY_FIGHTER_BULLET_INTERVAL,
-                lifespan: CONFIG.ENEMY_FIGHTER_BULLET_LIFESPAN,
-                maxCount: CONFIG.ENEMY_FIGHTER_BULLET_MAX_COUNT,
-                yOffset: 10,
-                flipY: true,
-            }
+        this,
+        this.#inputComponent,
+        {
+            speed: CONFIG.ENEMY_FIGHTER_BULLET_SPEED,
+            interval: CONFIG.ENEMY_FIGHTER_BULLET_INTERVAL,
+            lifespan: CONFIG.ENEMY_FIGHTER_BULLET_LIFESPAN,
+            maxCount: CONFIG.ENEMY_FIGHTER_BULLET_MAX_COUNT,
+            yOffset: 10,
+            flipY: true,
+        },
         );
-
-        this.#healthComponent = new HealthComponent(CONFIG.ENEMY_SCOUT_HEALTH);
+        this.#healthComponent = new HealthComponent(CONFIG.ENEMY_FIGHTER_HEALTH);
         this.#colliderComponent = new ColliderComponent(this.#healthComponent);
+        this.#eventBusComponent.emit(CUSTOM_EVENTS.EVENY_INIT, this);
+        this.#isInitialized = true;
     }
 
     reset() {

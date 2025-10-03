@@ -1,3 +1,4 @@
+import { EventBusComponent } from '@/events/event-bus-component';
 import { FighterEnemy } from '@/objects/enemies/fighter-enemy';
 import { ScoutEnemy } from '@/objects/enemies/scout-enemy';
 import { GameObjects, Math, Scene } from 'phaser';
@@ -19,7 +20,7 @@ export class EnemySpawnerComponent {
   #group;
   #disableSpawning;
 
-  constructor(scene : Scene, enemyClass : EnemyClass, spawnConfig : SpawnConfigType) {
+  constructor(scene : Scene, enemyClass : EnemyClass, spawnConfig : SpawnConfigType,eventBusComponent : EventBusComponent) {
     this.#scene = scene;
 
     this.#group = this.#scene.add.group({
@@ -27,7 +28,7 @@ export class EnemySpawnerComponent {
         classType: enemyClass,
         runChildUpdate: true,
         createCallback : (enemy) => {
-          enemy.disableInteractive()
+          (enemy as FighterEnemy).init(eventBusComponent)
         }
     })
 
