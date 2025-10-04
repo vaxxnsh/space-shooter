@@ -58,6 +58,14 @@ export class FighterEnemy extends GameObjects.Container {
         return this.#weaponComponent;
     }
 
+    get shipAssetKey() {
+        return 'fighter';
+    }
+
+    get shipDestroyedAnimationKey() {
+        return 'fighter_destroy';
+    }
+
     init(eventBusComponent : EventBusComponent) {
         this.#eventBusComponent = eventBusComponent;
         this.#inputComponent = new BotFighterInputComponent();
@@ -93,6 +101,9 @@ export class FighterEnemy extends GameObjects.Container {
     
 
     update(ts: number, dt: number): void {
+        if (!this.#isInitialized) {
+            return;
+        }
         if (!this.active) {
             return;
         }
@@ -100,6 +111,7 @@ export class FighterEnemy extends GameObjects.Container {
         if (this.#healthComponent!.isDead) {
             this.setActive(false);
             this.setVisible(false);
+            this.#eventBusComponent!.emit(CUSTOM_EVENTS.ENEMY_DESTROYED, this);
         }
 
         this.#inputComponent!.update()

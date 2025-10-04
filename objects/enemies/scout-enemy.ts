@@ -6,6 +6,7 @@ import * as  CONFIG from "@/lib/game-config";
 import { HorizontalMovementComponent } from "@/movement/horizontal-movement-component";
 import { ColliderComponent } from "@/collider/collider-component";
 import { HealthComponent } from "@/health/health-component";
+import { CUSTOM_EVENTS, EventBusComponent } from "@/events/event-bus-component";
 
 export class ScoutEnemy extends GameObjects.Container {
     #shipSprite;
@@ -15,6 +16,8 @@ export class ScoutEnemy extends GameObjects.Container {
     #horizontalMovementComponent : HorizontalMovementComponent | undefined;
     #healthComponent : HealthComponent | undefined;
     #colliderComponent : ColliderComponent | undefined;
+    #eventBusComponent : EventBusComponent | undefined;
+     #isInitialized : boolean = false;
      
     constructor(scene : GameScene,x : number,y : number) {
         super(scene, x, y, []);
@@ -45,7 +48,16 @@ export class ScoutEnemy extends GameObjects.Container {
         return this.#healthComponent;
     }
 
-    init() {
+    get shipAssetKey() {
+        return 'scout';
+    }
+
+    get shipDestroyedAnimationKey() {
+        return 'scout_destroy';
+    }
+
+    init(eventBusComponent : EventBusComponent) {
+        this.#eventBusComponent = eventBusComponent;
         this.#inputComponent = new BotScoutInputComponent(this)
         this.#verticalMovementComponent = new VerticalMovementComponent(
             this,
@@ -60,6 +72,8 @@ export class ScoutEnemy extends GameObjects.Container {
 
         this.#healthComponent = new HealthComponent(CONFIG.ENEMY_SCOUT_HEALTH);
         this.#colliderComponent = new ColliderComponent(this.#healthComponent);
+        this.#eventBusComponent.emit(CUSTOM_EVENTS.EVENY_INIT, this);
+        this.#isInitialized = true;
     }
 
     reset() {
@@ -71,13 +85,18 @@ export class ScoutEnemy extends GameObjects.Container {
     }
     
     update(ts: number, dt: number): void {
+            if (!this.#isInitialized) {
+      return;
+    }
+
         if (!this.active) {
             return;
         }
 
         if (this.#healthComponent!.isDead) {
-        this.setActive(false);
-        this.setVisible(false);
+            this.setActive(false);
+            this.setVisible(false);
+            this.#eventBusComponent!.emit(CUSTOM_EVENTS.ENEMY_DESTROYED, this);
         }
 
         this.#inputComponent!.update()

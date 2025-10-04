@@ -4,9 +4,10 @@ import { FighterEnemy } from "@/objects/enemies/fighter-enemy";
 import { ScoutEnemy } from "@/objects/enemies/scout-enemy";
 import { Player } from "@/objects/player";
 import { EnemySpawnerComponent } from "@/spawner/enemy-spawner-component";
-import { Physics, Scene, Types} from "phaser";
+import { GameObjects, Physics, Scene, Types} from "phaser";
 import * as CONFIG from "@/lib/game-config"
-import { EventBusComponent } from "@/events/event-bus-component";
+import { CUSTOM_EVENTS, EventBusComponent } from "@/events/event-bus-component";
+import { EnemyDestroyedComponent } from "@/spawner/enemy-destroyed-component";
 
 export default class GameScene extends Scene {
 
@@ -36,26 +37,79 @@ export default class GameScene extends Scene {
       disableSpawning : false,
     },eventBus)
 
-    // this.physics.add.overlap(player,fighter,(playerObj, enemyObj) => {
-    //   const pl = playerObj as Player
-    //   pl.colliderComponent.collideWithEnemyShip();
+    new EnemyDestroyedComponent(this, eventBus);
 
-    // })
+        // collisions for player and enemy groups
+    this.physics.add.overlap(player, scoutSpawner.phaserGroup, (playerGameObject, enemyGameObject) => {
+      const playerGameObj = playerGameObject as Player;
+      const enemyGameObj = enemyGameObject as ScoutEnemy;
+      if (!playerGameObj.active || !enemyGameObj.active) {
+        return;
+      }
 
-    // this.physics.add.overlap(player,fighter.weaponGameObjectGroup,(playerObj, bulletObj) => {
-    //   const pl = playerObj as Player
-    //   const ft = fighter as FighterEnemy
+      playerGameObj.colliderComponent.collideWithEnemyShip();
+      enemyGameObj.colliderComponent!.collideWithEnemyShip();
+    });
+    this.physics.add.overlap(player, fighterSpawner.phaserGroup, (playerGameObject, enemyGameObject) => {
+      const playerGameObj = playerGameObject as Player;
+      const enemyGameObj = enemyGameObject as ScoutEnemy;
 
-    //   pl.colliderComponent.collideWithEnemyProjectile()
-    //   ft.weaponComponent.destroyBullet((bulletObj as Physics.Arcade.Sprite))
-    // })
-    // this.physics.add.overlap(fighter,player.weaponGameObjectGroup,(enemyObj, bulletObj) => {
-    //   const pl = player as Player
-    //   const ft = enemyObj as FighterEnemy
+      if (!playerGameObj.active || !enemyGameObj.active) {
+        return;
+      }
 
-    //   ft.colliderComponent.collideWithEnemyProjectile()
-    //   pl.weaponComponent.destroyBullet((bulletObj as Physics.Arcade.Sprite))
-    // })
+      playerGameObj.colliderComponent.collideWithEnemyShip();
+      enemyGameObj.colliderComponent!.collideWithEnemyShip();
+    });
+
+
+    eventBus.on(CUSTOM_EVENTS.EVENY_INIT, (gameObject : Player) => {
+      if (gameObject.constructor.name !== 'FighterEnemy') {
+        return;
+      }
+
+      this.physics.add.overlap(player, gameObject.weaponGameObjectGroup, (playerGameObject, projectileGameObject) => {
+        const playerObj = playerGameObject as Player;
+        if (!playerObj.active || !playerObj.active) {
+          return;
+        }
+        gameObject.weaponComponent.destroyBullet((projectileGameObject as Physics.Arcade.Sprite));
+        playerObj.colliderComponent.collideWithEnemyProjectile();
+      });
+    });
+
+    this.physics.add.overlap(
+      scoutSpawner.phaserGroup,
+      player.weaponGameObjectGroup,
+      (enemyGameObject, projectileGameObject) => {
+        const enemyGameObj = enemyGameObject as ScoutEnemy;
+        const projectileGameObj = projectileGameObject as Physics.Arcade.Sprite
+
+        if (!enemyGameObj.active || !projectileGameObj.active) {
+          return;
+        }
+
+
+        player.weaponComponent.destroyBullet(projectileGameObj);
+        enemyGameObj.colliderComponent?.collideWithEnemyProjectile();
+      }
+    )
+
+    this.physics.add.overlap(
+      fighterSpawner.phaserGroup,
+      player.weaponGameObjectGroup,
+      (enemyGameObject, projectileGameObject) => {
+        const enemyGameObj = enemyGameObject as FighterEnemy;
+        const projectileGameObj = projectileGameObject as Physics.Arcade.Sprite
+
+        if (!enemyGameObj.active || !projectileGameObj.active) {
+          return;
+        }
+
+        player.weaponComponent.destroyBullet(projectileGameObj);
+        enemyGameObj.colliderComponent?.collideWithEnemyProjectile();
+      }
+    )
 
   }
 
