@@ -6,6 +6,7 @@ import * as CONFIG from "@/lib/game-config"
 import { WeaponComponent } from "@/weapons/weapon-component";
 import { HealthComponent } from "@/health/health-component";
 import { ColliderComponent } from "@/collider/collider-component";
+import { CUSTOM_EVENTS, EventBusComponent } from "@/events/event-bus-component";
 
 export class Player extends GameObjects.Container {
     #shipSprite;
@@ -16,9 +17,11 @@ export class Player extends GameObjects.Container {
     #weaponComponent;
     #healthComponent;
     #colliderComponent;
+    #eventBusComponent;
 
-    constructor(scene : GameScene) {
+    constructor(scene : GameScene, eventBusComponent : EventBusComponent) {
         super(scene, scene.scale.width / 2, scene.scale.height - 32, []);
+        this.#eventBusComponent = eventBusComponent;
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
         (this.body as Phaser.Physics.Arcade.Body).setSize(24,24);
@@ -51,10 +54,23 @@ export class Player extends GameObjects.Container {
                 speed : CONFIG.PLAYER_BULLET_SPEED,
                 lifespan : CONFIG.PLAYER_BULLET_LIFESPAN,
                 flipY : false
-            }
+            },
+            this.#eventBusComponent
         );
         this.#healthComponent = new HealthComponent(CONFIG.PLAYER_HEALTH);
-        this.#colliderComponent = new ColliderComponent(this.#healthComponent);
+        this.#colliderComponent = new ColliderComponent(this.#healthComponent,eventBusComponent);
+
+        this.#hide();
+        this.#eventBusComponent.on(CUSTOM_EVENTS.PLAYER_SPAWN, this.#spawn, this);
+
+        this.scene.events.on(Phaser.Scenes.Events.UPDATE, this.update, this);
+        this.once(
+        Phaser.GameObjects.Events.DESTROY,
+        () => {
+            this.scene.events.off(Phaser.Scenes.Events.UPDATE, this.update, this);
+        },
+        this
+        );
     }
 
     get colliderComponent() {
@@ -88,11 +104,13 @@ export class Player extends GameObjects.Container {
         }
 
         if (this.#healthComponent.isDead) {
+            console.log("Player Died !!")
             this.#hide();
             this.setVisible(true);
             this.#shipSprite.play({
                 key : 'explosion',
             });
+            this.#eventBusComponent.emit(CUSTOM_EVENTS.PLAYER_DESTROYED);
             return;
         }
         this.#shipSprite.setFrame((CONFIG.PLAYER_HEALTH - this.#healthComponent.Life).toString(10));
@@ -103,4 +121,16 @@ export class Player extends GameObjects.Container {
         this.#horizontalMovementComponent.update()
         this.#weaponComponent.update(dt)
     }
+
+
+    #spawn() {
+    this.setActive(true);
+    this.setVisible(true);
+    this.#shipEngineSprite.setVisible(true);
+    this.#shipEngineThrusterSprite.setVisible(true);
+    this.#shipSprite.setTexture('ship', 0);
+    this.#healthComponent.reset();
+    this.setPosition(this.scene.scale.width / 2, this.scene.scale.height - 32);
+    this.#keyInputComponent.lockInput = false;
+  }
 }

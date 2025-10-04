@@ -8,6 +8,9 @@ import { GameObjects, Physics, Scene, Types} from "phaser";
 import * as CONFIG from "@/lib/game-config"
 import { CUSTOM_EVENTS, EventBusComponent } from "@/events/event-bus-component";
 import { EnemyDestroyedComponent } from "@/spawner/enemy-destroyed-component";
+import { Score } from "@/ui/score";
+import { Lives } from "@/ui/lives";
+import { AudioManager } from "@/objects/audio-manager";
 
 export default class GameScene extends Scene {
 
@@ -21,11 +24,11 @@ export default class GameScene extends Scene {
   }
 
   create() {
-    const player = new Player(this);
+    this.add.sprite(0, 0, 'bg1', 0).setOrigin(0, 1).setAlpha(0.7).setAngle(90).setScale(1, 1.25).play('bg1');
+    this.add.sprite(0, 0, 'bg2', 0).setOrigin(0, 1).setAlpha(0.7).setAngle(90).setScale(1, 1.25).play('bg2');
+    this.add.sprite(0, 0, 'bg3', 0).setOrigin(0, 1).setAlpha(0.7).setAngle(90).setScale(1, 1.25).play('bg3');
     const eventBus = new EventBusComponent();
-    // const scouts = new ScoutEnemy(this, this.scale.width/2,20);
-    // const fighter = new FighterEnemy(this,this.scale.width/2,20);
-
+    const player = new Player(this,eventBus);
     const scoutSpawner = new EnemySpawnerComponent(this,ScoutEnemy,{
       interval : CONFIG.ENEMY_SCOUT_GROUP_SPAWN_INTERVAL,
       spawnAt : CONFIG.ENEMY_SCOUT_GROUP_SPAWN_START,
@@ -39,7 +42,7 @@ export default class GameScene extends Scene {
 
     new EnemyDestroyedComponent(this, eventBus);
 
-        // collisions for player and enemy groups
+    // collisions for player and enemy groups
     this.physics.add.overlap(player, scoutSpawner.phaserGroup, (playerGameObject, enemyGameObject) => {
       const playerGameObj = playerGameObject as Player;
       const enemyGameObj = enemyGameObject as ScoutEnemy;
@@ -110,7 +113,10 @@ export default class GameScene extends Scene {
         enemyGameObj.colliderComponent?.collideWithEnemyProjectile();
       }
     )
-
+    
+    new Score(this,eventBus);
+    new Lives(this, eventBus);
+    new AudioManager(this, eventBus);
   }
 
 }

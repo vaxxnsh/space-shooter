@@ -71,7 +71,7 @@ export class ScoutEnemy extends GameObjects.Container {
         )
 
         this.#healthComponent = new HealthComponent(CONFIG.ENEMY_SCOUT_HEALTH);
-        this.#colliderComponent = new ColliderComponent(this.#healthComponent);
+        this.#colliderComponent = new ColliderComponent(this.#healthComponent,eventBusComponent);
         this.#eventBusComponent.emit(CUSTOM_EVENTS.EVENY_INIT, this);
         this.#isInitialized = true;
     }

@@ -1,3 +1,4 @@
+import { CUSTOM_EVENTS, EventBusComponent } from "@/events/event-bus-component";
 import { InputComponent } from "@/inputs/input-component";
 import { GameObjects, Math, Physics } from "phaser";
 
@@ -16,11 +17,13 @@ export class WeaponComponent {
   #bulletGroup : Physics.Arcade.Group;
   #bulletConfig : BulletConfig;
   #fireBulletInterval = 0;
+  #eventBusComponent;
   
 
-  constructor(gameObject : GameObjects.Container, inputComponent : InputComponent, bulletConfig : BulletConfig) {
+  constructor(gameObject : GameObjects.Container, inputComponent : InputComponent, bulletConfig : BulletConfig,eventBusComponent : EventBusComponent) {
     this.#gameObject = gameObject;
     this.#inputComponent = inputComponent
+    this.#eventBusComponent = eventBusComponent;
     this.#bulletConfig = bulletConfig
     this.#bulletGroup = this.#gameObject.scene.
     physics.
@@ -65,6 +68,7 @@ export class WeaponComponent {
         bullet.body.setSize(14,18);
         bullet.setFlipY(this.#bulletConfig.flipY)
         this.#fireBulletInterval = this.#bulletConfig.interval;
+        this.#eventBusComponent.emit(CUSTOM_EVENTS.SHIP_SHOOT);
     }
   }
 

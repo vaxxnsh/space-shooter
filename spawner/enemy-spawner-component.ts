@@ -1,4 +1,4 @@
-import { EventBusComponent } from '@/events/event-bus-component';
+import { CUSTOM_EVENTS, EventBusComponent } from '@/events/event-bus-component';
 import { FighterEnemy } from '@/objects/enemies/fighter-enemy';
 import { ScoutEnemy } from '@/objects/enemies/scout-enemy';
 import { GameObjects, Math, Scene } from 'phaser';
@@ -46,6 +46,11 @@ export class EnemySpawnerComponent {
       },
       this
     );
+
+    eventBusComponent.on(CUSTOM_EVENTS.GAME_OVER, () => {
+      this.#disableSpawning = true;
+    });
+
   }
 
   get phaserGroup() {
