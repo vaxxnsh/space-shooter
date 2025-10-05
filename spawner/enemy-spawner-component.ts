@@ -51,6 +51,14 @@ export class EnemySpawnerComponent {
       this.#disableSpawning = true;
     });
 
+    eventBusComponent.on(CUSTOM_EVENTS.PAUSE_ENEMY_SPAWNING, () => {
+      this.#disableSpawning = true;
+    });
+
+    eventBusComponent.on(CUSTOM_EVENTS.RESUME_ENEMY_SPAWNING, () => {
+      this.#disableSpawning = false;
+    });
+
   }
 
   get phaserGroup() {

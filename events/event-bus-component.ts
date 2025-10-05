@@ -8,6 +8,9 @@ export const CUSTOM_EVENTS = Object.freeze({
     GAME_OVER: 'GAME_OVER',
     SHIP_HIT: 'SHIP_HIT',
     SHIP_SHOOT: 'SHIP_SHOOT',
+    ASK_QUESTION: 'ASK_QUESTION',
+    PAUSE_ENEMY_SPAWNING: 'PAUSE_ENEMY_SPAWNING',
+    RESUME_ENEMY_SPAWNING: 'RESUME_ENEMY_SPAWNING',
 });
 
 export class EventBusComponent extends Events.EventEmitter {

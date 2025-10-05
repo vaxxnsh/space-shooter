@@ -35,4 +35,9 @@ export class Score extends GameObjects.Text {
       }
     );
   }
+
+  addBonus(points: number): void {
+    this.#score += points;
+    this.setText(this.#score.toString(10));
+  }
 }
